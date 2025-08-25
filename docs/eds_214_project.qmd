@@ -1,0 +1,18 @@
+---
+title: "Chemistry of stream water from the Luquillo Mountains"
+author: "Richard Montes Lemus"
+format: html
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(janitor)
+library(here)
+```
+
+```{r}
+stream_nutrients <- read_csv(here("data", "BasicFieldData-Streams.csv")) %>% 
+  filter(Sample_ID == c("MPR", "Q1", "Q2", "Q3"))
+```
+
+
