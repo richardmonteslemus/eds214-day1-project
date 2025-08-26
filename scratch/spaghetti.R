@@ -46,6 +46,3 @@ sample_data_test <- sample_data_test %>%
 
 
   # mutate(nine_day_moving_avg = mean())
-
-
-quick_edit <- 1
