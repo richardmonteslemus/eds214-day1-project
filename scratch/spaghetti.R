@@ -62,32 +62,32 @@ pmr <- read_csv(here("data", "RioMameyesPuenteRoto.csv"))
 # subset_sample_data_test_1 <- sample_data_test %>% 
 #   filter(days_since_start  63) %>% 
 #   mutate(moving_mean = mean(days_since_start))
-# 
 
 
-<<<<<<< HEAD
-=======
+source("R/moving_average.R")
 
-start <- as.Date(sample_data_test$Sample_Date[1], format="%yyyy/%mm/%dd")
-finish <- as.Date(sample_data_test$Sample_Date[3], format="%yyyy/%mm/%dd")
-
-date_diff <- as.numeric(finish-start)
-date_diff
+# Write Function to calculate moving average 
+moving_average <- function(focal_date, dates, conc, win_size_wks) {
+  # Which dates are in the window?
+  is_in_window <- (dates > focal_date - (win_size_wks/2) * 7) & 
+    (dates < focal_date + (win_size_wks / 2) * 7)
+  # Find the associated concentrations
+  window_conc <- conc[is_in_window]
+  # Calculate the mean 
+  result <- mean(window_conc)
   
-
-
-vector_9day <- vector(mode = "numeric", length = length(sample_data_test$Sample_Date))
-
-for (i in seq_along(sample_data_test$Sample_Date)){
-  start <- as.Date(sample_data_test$Sample_Date[1], format="%yyyy/%mm/%dd")
-  finish <- as.Date(sample_data_test$Sample_Date[i], format="%yyyy/%mm/%dd")
-  date_diff <- as.numeric(finish-start)
-  vector_9day[i] <- date_diff
+  return(result)
 }
 
-sample_data_test <- sample_data_test %>% 
-  mutate(days_since_start = vector_9day)
+q1 <- q1 %>% 
+  clean_names()
 
+# Apply function to all cases 
+q1$cal_rolling <- sapply(
+  q1$sample_date, 
+  moving_average,
+  dates = q1$sample_date, 
+  conc = q1$ca, 
+  win_size_wks = 9
+)
 
-  # mutate(nine_day_moving_avg = mean())
->>>>>>> 450b102e2df10bebe48b7c6abad3abf49c5d3ace
