@@ -65,3 +65,29 @@ pmr <- read_csv(here("data", "RioMameyesPuenteRoto.csv"))
 # 
 
 
+<<<<<<< HEAD
+=======
+
+start <- as.Date(sample_data_test$Sample_Date[1], format="%yyyy/%mm/%dd")
+finish <- as.Date(sample_data_test$Sample_Date[3], format="%yyyy/%mm/%dd")
+
+date_diff <- as.numeric(finish-start)
+date_diff
+  
+
+
+vector_9day <- vector(mode = "numeric", length = length(sample_data_test$Sample_Date))
+
+for (i in seq_along(sample_data_test$Sample_Date)){
+  start <- as.Date(sample_data_test$Sample_Date[1], format="%yyyy/%mm/%dd")
+  finish <- as.Date(sample_data_test$Sample_Date[i], format="%yyyy/%mm/%dd")
+  date_diff <- as.numeric(finish-start)
+  vector_9day[i] <- date_diff
+}
+
+sample_data_test <- sample_data_test %>% 
+  mutate(days_since_start = vector_9day)
+
+
+  # mutate(nine_day_moving_avg = mean())
+>>>>>>> 450b102e2df10bebe48b7c6abad3abf49c5d3ace
