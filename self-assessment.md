@@ -1,4 +1,4 @@
-# Self Assessment for EDS 214 Final Prject
+# Self Assessment for EDS 214 Final Project
 
 ## Automate 
 #### **Running the entire analysis requires rendering one Quarto document**
