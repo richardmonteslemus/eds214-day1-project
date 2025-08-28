@@ -13,7 +13,7 @@ Load in necessary packages
 library(tidyverse)
 library(janitor)
 library(here)
-source("R/moving_average.R")
+source(here("R/moving_average.R"))
 ```
 
 # Background 
