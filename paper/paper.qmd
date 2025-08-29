@@ -13,7 +13,8 @@ Load in necessary packages
 library(tidyverse)
 library(janitor)
 library(here)
-source(here("R/moving_average.R"))
+source(here("R", "moving_average.R"))
+source(here("R", "chemical_labeller.R"))
 ```
 
 # Background 
@@ -22,44 +23,8 @@ This analysis plots the chemical concentration of samples taken from various str
 It calculates the 9 week moving average for every chemical concentration and plots it across time. From this plot, the effects of Hurricane Hugo on chemical concentrations can be observed. 
 
 # Data
-Chemical concentration data comes from the following Bisley stream water samples sites, Quebrada Cuenca site 1, 2, and 3 (q1, q2, q3) and Puente Roto Mameyes (PMR). 
+Chemical concentration data comes from the following Bisley stream water samples sites, Quebrada Cuenca site 1, 2, and 3 (q1, q2, q3) and Puente Roto Mameyes (PMR). The column names have been cleaned, the site tables have been joined, and the dates filtered for the desired date range. 
 
-```{r, warning=FALSE, message=FALSE}
-q1 <- read_csv(here("data", "QuebradaCuenca1-Bisley.csv"))
-
-q2 <- read_csv(here("data", "QuebradaCuenca2-Bisley.csv"))
-
-q3 <- read_csv(here("data", "QuebradaCuenca3-Bisley.csv"))
-
-pmr <- read_csv(here("data", "RioMameyesPuenteRoto.csv"))
-```
-# Methods
-The following code is used to join and wrangle the stream water data, calculate the 9 week moving mean for every data point. 
-
-Turn all columns in data frame to snake_case.
-```{r}
-q1 <- q1 %>% 
-  clean_names() 
-```
-
-Apply moving average function to a data frame and insert calculation into a new column called "chemical name"_cal_rolling. 
-```{r}
-q1$ca_cal_rolling <- sapply(
-  q1$sample_date, 
-  moving_average,
-  dates = q1$sample_date, 
-  conc = q1$ca, 
-  win_size_wks = 9
-)
-```
-
-
-# Results
-Produce plot of chemical concentrations of different sites across time. 
-
-```{r}
-q1_ca_plot <- q1 %>% 
-  ggplot(aes(x = sample_date, y = ca_cal_rolling)) + 
-  geom_line()
-q1_ca_plot
+```{r, message=FALSE, warning=FALSE}
+source(here("1_df_clean_wrang.R"))
 ```
