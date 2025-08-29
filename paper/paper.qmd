@@ -103,7 +103,8 @@ This step will allow the use of facet_grid which relies on a single column to cr
 # Pivot longer 
 long_sites_avg <- joined_sites_avg %>% 
   pivot_longer(k_moving_avg:nh4_n_moving_avg,
-               names_to = "chemical", values_to = "concentration_average")
+               names_to = "chemical",
+               values_to = "concentration_average")
 ```
 
 
@@ -124,13 +125,18 @@ chem_site_plot <- long_sites_avg %>%
   geom_line(size = 1) +
   scale_color_discrete(labels = c("PMR", "BQ1", "BQ2", "BQ3")) + # change labels in legend
   facet_grid(rows = vars(factor(chemical,
-                     levels=c("k_moving_avg", "no3_n_moving_avg", "mg_moving_avg", "ca_moving_avg", "nh4_n_moving_avg"))), scales = "free", switch = "y", labeller=chemical_labeller) + # apply labeller function to replace the plots x axis title.  
+                     levels=c("k_moving_avg",
+                              "no3_n_moving_avg",
+                              "mg_moving_avg",
+                              "ca_moving_avg",
+                            "nh4_n_moving_avg"))),
+             scales = "free",
+             switch = "y", labeller=chemical_labeller) + # apply labeller function to replace the plots x axis title.  
   theme_classic() + 
   theme(legend.position = c(1.07, 0.9), # adjust plot sections
         plot.margin = unit(c(1,2.4,0.5,0.4), "cm"),
         axis.title.y = element_blank(), 
-        panel.border = element_rect(color = "black", 
-                                    fill = NA, size = 1),
+        panel.border = element_rect(color = "black", fill = NA, size = 1),
         plot.title = element_text(hjust = 0.5), 
         axis.title.x = element_text(size = 13), 
         legend.title=element_blank(),
@@ -141,6 +147,8 @@ chem_site_plot <- long_sites_avg %>%
   averages.(a) potassium, (b) nitrate-N, (c) magnesium, (d) calcium and (e) ammonium-N. The vertical 
   lines mark the time of hurricane disturbance.") + 
   geom_vline(xintercept = as.Date("1989-09-19"), linetype = 3) # insert vertical line indicating the occurance of hurricane hugo
+
+ggsave("chem_site_plot.png", path = here("figs"),  width = 8, height = 10)
   
 ```
 
