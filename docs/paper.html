@@ -101,24 +101,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"moving_average.R"</span>))</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"chemical_labeller.R"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"moving_average.R"</span>)) <span class="co"># call a function you will be using </span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"chemical_labeller.R"</span>)) <span class="co"># call a function you will be using </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="background" class="level1">
 <h1>Background</h1>
 <p>This analysis plots the chemical concentration of samples taken from various stream water sites in the Luquillo Mountains, Puerto Rico.</p>
-<p>It calculates the 9 week moving average for every chemical concentration and plots it across time. From this plot, the effects of Hurricane Hugo on chemical concentrations can be observed.</p>
+<p>It calculates the 9 week moving average for every chemical concentration and plots it across time. From this plot, the effects of Hurricane Hugo on stream chemical concentrations can be observed.</p>
 </section>
 <section id="data" class="level1">
 <h1>Data</h1>
 <p>Chemical concentration data comes from the following Bisley stream water samples sites, Quebrada Cuenca site 1, 2, and 3 (q1, q2, q3) and Puente Roto Mameyes (PMR). The column names have been cleaned, the site tables have been joined, and the dates filtered for the desired date range.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"1_df_clean_wrang.R"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source an intermediate file containing the cleaned and wrangled data frame.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"1_df_clean_wrang.R"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="methods" class="level1">
 <h1>Methods</h1>
-<p>The following code is apply a moving average function to a data frame and insert calculation into a new column called “chemical name”_moving_avg.</p>
+<p>The following code applies a moving average function to the data frame and inserts this calculation into a new column called “chemical name”_moving_avg.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create potassium moving average column </span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>joined_sites_avg <span class="ot">&lt;-</span> joined_sites <span class="sc">%&gt;%</span> </span>
@@ -180,71 +181,55 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span> </span>
 <span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>This code uses pivot longer to place all chemical types into their own column called “chemical” and their concentration average in a separate this column.</p>
+<p>This step will allow the use of facet_grid which relies on a single column to create individual panels.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>long_sites_avg <span class="ot">&lt;-</span> joined_sites_avg <span class="sc">%&gt;%</span> </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(k_moving_avg<span class="sc">:</span>nh4_n_moving_avg,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"chemical"</span>, <span class="at">values_to =</span> <span class="st">"concentration_average"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pivot longer </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>long_sites_avg <span class="ot">&lt;-</span> joined_sites_avg <span class="sc">%&gt;%</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(k_moving_avg<span class="sc">:</span>nh4_n_moving_avg,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"chemical"</span>, <span class="at">values_to =</span> <span class="st">"concentration_average"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>This code produces a plot with separate panels for each chemical. Each panel contains the chemical concentration over time with distinct lines for each site.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>chemical_names <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">'k_moving_avg'</span><span class="ot">=</span><span class="st">"K mg l^-1"</span>,</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">'no3_n_moving_avg'</span><span class="ot">=</span><span class="st">"NO3-N ug l^-1"</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">'mg_moving_avg'</span><span class="ot">=</span><span class="st">"Mg mg l^-1"</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">'ca_moving_avg'</span><span class="ot">=</span><span class="st">"Ca mg l^-1"</span>, </span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">'nh4_n_moving_avg'</span> <span class="ot">=</span> <span class="st">"NH4-N ug l-1"</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>chem_site_plot <span class="ot">&lt;-</span> long_sites_avg <span class="sc">%&gt;%</span> </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> sample_date, <span class="at">y =</span> concentration_average, <span class="at">color =</span> sample_id)) <span class="sc">+</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"PMR"</span>, <span class="st">"BQ1"</span>, <span class="st">"BQ2"</span>, <span class="st">"BQ3"</span>)) <span class="sc">+</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(<span class="fu">factor</span>(chemical,</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels=</span><span class="fu">c</span>(<span class="st">"k_moving_avg"</span>, <span class="st">"no3_n_moving_avg"</span>, <span class="st">"mg_moving_avg"</span>, <span class="st">"ca_moving_avg"</span>, <span class="st">"nh4_n_moving_avg"</span>))), <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">switch =</span> <span class="st">"y"</span>, <span class="at">labeller=</span>chemical_labeller) <span class="sc">+</span> </span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span> </span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="fu">c</span>(<span class="fl">1.07</span>, <span class="fl">0.9</span>), </span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.margin =</span> <span class="fu">unit</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="fl">2.4</span>,<span class="fl">0.5</span>,<span class="fl">0.4</span>), <span class="st">"cm"</span>),</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(), </span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">color =</span> <span class="st">"black"</span>, </span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">size =</span> <span class="dv">1</span>),</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>), </span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">13</span>), </span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title=</span><span class="fu">element_blank</span>(),</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>, <span class="at">hjust =</span> <span class="dv">0</span>)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">+</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Years"</span>) <span class="sc">+</span> </span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Years"</span>, <span class="at">caption =</span> <span class="st">"Figure 3. Concentrations in Bisley, Puerto Rico streams before and after Hurricane Hugo, 9-wk moving </span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="st">  averages.(a) potassium, (b) nitrate-N, (c) magnesium, (d) calcium and (e) ammonium-N. The vertical </span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="st">  lines mark the time of hurricane disturbance."</span>) <span class="sc">+</span> </span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">as.Date</span>(<span class="st">"1989-09-19"</span>), <span class="at">linetype =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-ℹ Please use `linewidth` instead.</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: The `labeller` API has been updated. Labellers taking `variable` and `value`
-arguments are now deprecated.
-ℹ See labellers documentation.</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: The `size` argument of `element_rect()` is deprecated as of ggplot2 3.4.0.
-ℹ Please use the `linewidth` argument instead.</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: A numeric `legend.position` argument in `theme()` was deprecated in ggplot2
-3.5.0.
-ℹ Please use the `legend.position.inside` argument of `theme()` instead.</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list which contains the replacement names for the previous facet grid x axis strip labels. </span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>chemical_names <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">'k_moving_avg'</span><span class="ot">=</span><span class="st">"K mg l^-1"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">'no3_n_moving_avg'</span><span class="ot">=</span><span class="st">"NO3-N ug l^-1"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">'mg_moving_avg'</span><span class="ot">=</span><span class="st">"Mg mg l^-1"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">'ca_moving_avg'</span><span class="ot">=</span><span class="st">"Ca mg l^-1"</span>, </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">'nh4_n_moving_avg'</span> <span class="ot">=</span> <span class="st">"NH4-N ug l-1"</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>chem_site_plot <span class="ot">&lt;-</span> long_sites_avg <span class="sc">%&gt;%</span> </span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> sample_date, <span class="at">y =</span> concentration_average, <span class="at">color =</span> sample_id)) <span class="sc">+</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"PMR"</span>, <span class="st">"BQ1"</span>, <span class="st">"BQ2"</span>, <span class="st">"BQ3"</span>)) <span class="sc">+</span> <span class="co"># change labels in legend</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(<span class="fu">factor</span>(chemical,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels=</span><span class="fu">c</span>(<span class="st">"k_moving_avg"</span>, <span class="st">"no3_n_moving_avg"</span>, <span class="st">"mg_moving_avg"</span>, <span class="st">"ca_moving_avg"</span>, <span class="st">"nh4_n_moving_avg"</span>))), <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">switch =</span> <span class="st">"y"</span>, <span class="at">labeller=</span>chemical_labeller) <span class="sc">+</span> <span class="co"># apply labeller function to replace the plots x axis title.  </span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span> </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="fu">c</span>(<span class="fl">1.07</span>, <span class="fl">0.9</span>), <span class="co"># adjust plot sections</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.margin =</span> <span class="fu">unit</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="fl">2.4</span>,<span class="fl">0.5</span>,<span class="fl">0.4</span>), <span class="st">"cm"</span>),</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_blank</span>(), </span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">color =</span> <span class="st">"black"</span>, </span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">size =</span> <span class="dv">1</span>),</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>), </span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">13</span>), </span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.title=</span><span class="fu">element_blank</span>(),</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.caption =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>, <span class="at">hjust =</span> <span class="dv">0</span>)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">+</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Years"</span>) <span class="sc">+</span> </span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Years"</span>, <span class="at">caption =</span> <span class="st">"Figure 3. Concentrations in Bisley, Puerto Rico streams before and after Hurricane Hugo, 9-wk moving </span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="st">  averages.(a) potassium, (b) nitrate-N, (c) magnesium, (d) calcium and (e) ammonium-N. The vertical </span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="st">  lines mark the time of hurricane disturbance."</span>) <span class="sc">+</span> </span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">as.Date</span>(<span class="st">"1989-09-19"</span>), <span class="at">linetype =</span> <span class="dv">3</span>) <span class="co"># insert vertical line indicating the occurance of hurricane hugo</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="results" class="level1">
 <h1>Results</h1>
-<p>Produce plot of chemical concentrations of different sites across time.</p>
+<p>Chemical concentrations of different sites across time.</p>
+<p>The occurrence of Hurricane Hugo is visulaized with a horizontal line, it demonstrates how chemical concentrations changed after it.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>chem_site_plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 1193 rows containing missing values or values outside the scale range
-(`geom_line()`).</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">

@@ -13,26 +13,25 @@ Load in necessary packages
 library(tidyverse)
 library(janitor)
 library(here)
-source(here("R", "moving_average.R"))
-source(here("R", "chemical_labeller.R"))
+source(here("R", "moving_average.R")) # call a function you will be using 
+source(here("R", "chemical_labeller.R")) # call a function you will be using 
 ```
 
 # Background 
 This analysis plots the chemical concentration of samples taken from various stream water sites in the Luquillo Mountains, Puerto Rico. 
 
-It calculates the 9 week moving average for every chemical concentration and plots it across time. From this plot, the effects of Hurricane Hugo on chemical concentrations can be observed. 
+It calculates the 9 week moving average for every chemical concentration and plots it across time. From this plot, the effects of Hurricane Hugo on stream chemical concentrations can be observed. 
 
 # Data
 Chemical concentration data comes from the following Bisley stream water samples sites, Quebrada Cuenca site 1, 2, and 3 (q1, q2, q3) and Puente Roto Mameyes (PMR). The column names have been cleaned, the site tables have been joined, and the dates filtered for the desired date range. 
-
 ```{r, message=FALSE, warning=FALSE}
+# Source an intermediate file containing the cleaned and wrangled data frame.
 source(here("1_df_clean_wrang.R"))
 ```
 
 
 # Methods
-The following code is apply a moving average function to a data frame and insert calculation into a new column called "chemical name"_moving_avg. 
-
+The following code applies a moving average function to the data frame and inserts this  calculation into a new column called "chemical name"_moving_avg. 
 ```{r}
 # Create potassium moving average column 
 joined_sites_avg <- joined_sites %>% 
@@ -97,14 +96,20 @@ joined_sites_avg <- joined_sites_avg %>%
 ```
 
 
+This code uses pivot longer to place all chemical types into their own column called "chemical" and their concentration average in a separate this column. 
+
+This step will allow the use of facet_grid which relies on a single column to create individual panels. 
 ```{r}
+# Pivot longer 
 long_sites_avg <- joined_sites_avg %>% 
   pivot_longer(k_moving_avg:nh4_n_moving_avg,
                names_to = "chemical", values_to = "concentration_average")
 ```
 
 
-```{r}
+This code produces a plot with separate panels for each chemical. Each panel contains the chemical concentration over time with distinct lines for each site. 
+```{r, warning=FALSE}
+# Create a list which contains the replacement names for the previous facet grid x axis strip labels. 
 chemical_names <- list(
   'k_moving_avg'="K mg l^-1",
   'no3_n_moving_avg'="NO3-N ug l^-1",
@@ -113,14 +118,15 @@ chemical_names <- list(
   'nh4_n_moving_avg' = "NH4-N ug l-1"
 )
 
+# Plot
 chem_site_plot <- long_sites_avg %>% 
   ggplot(aes(x = sample_date, y = concentration_average, color = sample_id)) +
   geom_line(size = 1) +
-  scale_color_discrete(labels = c("PMR", "BQ1", "BQ2", "BQ3")) +
+  scale_color_discrete(labels = c("PMR", "BQ1", "BQ2", "BQ3")) + # change labels in legend
   facet_grid(rows = vars(factor(chemical,
-                     levels=c("k_moving_avg", "no3_n_moving_avg", "mg_moving_avg", "ca_moving_avg", "nh4_n_moving_avg"))), scales = "free", switch = "y", labeller=chemical_labeller) + 
+                     levels=c("k_moving_avg", "no3_n_moving_avg", "mg_moving_avg", "ca_moving_avg", "nh4_n_moving_avg"))), scales = "free", switch = "y", labeller=chemical_labeller) + # apply labeller function to replace the plots x axis title.  
   theme_classic() + 
-  theme(legend.position = c(1.07, 0.9), 
+  theme(legend.position = c(1.07, 0.9), # adjust plot sections
         plot.margin = unit(c(1,2.4,0.5,0.4), "cm"),
         axis.title.y = element_blank(), 
         panel.border = element_rect(color = "black", 
@@ -134,14 +140,16 @@ chem_site_plot <- long_sites_avg %>%
   labs(title = "Years", caption = "Figure 3. Concentrations in Bisley, Puerto Rico streams before and after Hurricane Hugo, 9-wk moving 
   averages.(a) potassium, (b) nitrate-N, (c) magnesium, (d) calcium and (e) ammonium-N. The vertical 
   lines mark the time of hurricane disturbance.") + 
-  geom_vline(xintercept = as.Date("1989-09-19"), linetype = 3)
+  geom_vline(xintercept = as.Date("1989-09-19"), linetype = 3) # insert vertical line indicating the occurance of hurricane hugo
   
 ```
 
 # Results
-Produce plot of chemical concentrations of different sites across time. 
-```{r, fig.width=8, fig.height = 10}
-chem_site_plot
+Chemical concentrations of different sites across time. 
+
+The occurrence of Hurricane Hugo is visulaized with a horizontal line, it demonstrates how chemical concentrations changed after it.
+```{r, fig.width = 8, fig.height = 10, warning= FALSE, echo = FALSE}
+chem_site_plot # Output the final plot 
 ```
 
 
