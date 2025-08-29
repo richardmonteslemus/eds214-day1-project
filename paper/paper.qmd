@@ -7,8 +7,7 @@ format: html
 title: "Final Project Quarto Analysis"
 format: html
 ---
- 
-Load in necessary packages 
+##### Load in necessary packages 
 ```{r, message=FALSE}
 library(tidyverse)
 library(janitor)
@@ -24,20 +23,27 @@ It calculates the 9 week moving average for every chemical concentration and plo
 
 # Data
 Chemical concentration data comes from the following Bisley stream water samples sites, Quebrada Cuenca site 1, 2, and 3 (q1, q2, q3) and Puente Roto Mameyes (PMR). The column names have been cleaned, the site tables have been joined, and the dates filtered for the desired date range. 
+
+##### Read in RDS file produced in a seperate script
 ```{r, message=FALSE, warning=FALSE}
+#| code-fold: TRUE
+#| echo: TRUE
 # Source an intermediate file containing the cleaned and wrangled data frame.
-source(here("1_df_clean_wrang.R"))
+joined_sites <- readRDS(here("outputs", "joined_sites.rds"))
 ```
 
 
 # Methods
 The following code calculates the moving average for each data point, which corresponds to the chemical concentration of a specific site at a specific time. 
 
-It uses a 9 week window for every data point. Meaning that for each data point, it obtains all concentration values that were collected 4.5 weeks before that data point and all those after that were collected after that point but not extending past 4.5 weeks. 
+It uses a 9 week window for every data point. Meaning that for each data point, it obtains all concentration values that were collected 4.5 weeks before that data point and all those after that were collected after that point, but not extending past 4.5 weeks. 
 
-The concentration values within this windows is averaged out for every data point.  Then, this scalar is saved into same row as the initial data point, but into a separate column called "chemical name"_moving_avg specific to an individual chemical.  
+The concentration values within this window is averaged out for every data point.  Then, this scalar is saved into same row as the initial data point. A separate column called "chemical name"_moving_avg is added for each individual chemical.  
 
+##### Add moving average column for all chemicals
 ```{r}
+#| code-fold: TRUE
+#| echo: TRUE
 # Create potassium moving average column 
 joined_sites_avg <- joined_sites %>% 
   group_by(sample_id) %>% 
@@ -101,10 +107,14 @@ joined_sites_avg <- joined_sites_avg %>%
 ```
 
 
-This code uses pivot longer to place all chemical types into their own column called "chemical" and their concentration average in a separate this column. 
+This code uses pivot longer to place all chemical types into their own column called "chemical" and their concentration average in a separate column called "concentration_average". 
 
 This step will allow the use of facet_grid which relies on a single column to create individual panels. 
+
+##### Pivot longer chemical concentration columns
 ```{r}
+#| code-fold: TRUE
+#| echo: TRUE
 # Pivot longer 
 long_sites_avg <- joined_sites_avg %>% 
   pivot_longer(k_moving_avg:nh4_n_moving_avg,
@@ -114,7 +124,11 @@ long_sites_avg <- joined_sites_avg %>%
 
 
 This code produces a plot with separate panels for each chemical. Each panel contains the chemical concentration over time with distinct lines for each site. 
-```{r, warning=FALSE}
+
+##### Plot chemical concentrations across time
+```{r, warning=FALSE, message=FALSE}
+#| code-fold: TRUE
+#| echo: TRUE
 # Create a list which contains the replacement names for the previous facet grid x axis strip labels. 
 chemical_names <- list(
   'k_moving_avg'="K mg l^-1",
@@ -129,7 +143,7 @@ chem_site_plot <- long_sites_avg %>%
   ggplot(aes(x = sample_date, y = concentration_average, color = sample_id)) +
   geom_line(size = 1) +
   scale_color_discrete(labels = c("PMR", "BQ1","BQ2", "BQ3")) + # change labels in legend
-  scale_color_manual(values=c("purple", "darkblue", "blue", "yellow")) +
+  scale_color_manual(values=c("darkred", "darkblue", "purple", "black")) +
   facet_grid(rows = vars(factor(chemical,
                      levels=c("k_moving_avg",
                               "no3_n_moving_avg",
@@ -159,9 +173,9 @@ ggsave("chem_site_plot.png", path = here("figs"),  width = 8, height = 10)
 ```
 
 # Results
-Chemical concentrations of different sites across time. 
+This plot shows the chemical concentrations of different chemicals at different sites across time. 
 
-The occurrence of Hurricane Hugo is visulaized with a horizontal line, it demonstrates how chemical concentrations changed after it.
+The occurrence of Hurricane Hugo is visualized with a horizontal line, it demonstrates how chemical concentrations changed after it occurred. 
 ```{r, fig.width = 8, fig.height = 10, warning= FALSE, echo = FALSE}
 chem_site_plot # Output the final plot 
 ```

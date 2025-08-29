@@ -96,7 +96,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Load in necessary packages</p>
+<section id="load-in-necessary-packages" class="level5">
+<h5 class="anchored" data-anchor-id="load-in-necessary-packages">Load in necessary packages</h5>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
@@ -104,6 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"moving_average.R"</span>)) <span class="co"># call a function you will be using </span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"chemical_labeller.R"</span>)) <span class="co"># call a function you will be using </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
 <section id="background" class="level1">
 <h1>Background</h1>
 <p>This analysis plots the chemical concentration of samples taken from various stream water sites in the Luquillo Mountains, Puerto Rico.</p>
@@ -112,15 +114,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="data" class="level1">
 <h1>Data</h1>
 <p>Chemical concentration data comes from the following Bisley stream water samples sites, Quebrada Cuenca site 1, 2, and 3 (q1, q2, q3) and Puente Roto Mameyes (PMR). The column names have been cleaned, the site tables have been joined, and the dates filtered for the desired date range.</p>
+<section id="read-in-rds-file-produced-in-a-seperate-script" class="level5">
+<h5 class="anchored" data-anchor-id="read-in-rds-file-produced-in-a-seperate-script">Read in RDS file produced in a seperate script</h5>
 <div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Source an intermediate file containing the cleaned and wrangled data frame.</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"1_df_clean_wrang.R"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>joined_sites <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(<span class="st">"outputs"</span>, <span class="st">"joined_sites.rds"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
+</section>
 </section>
 <section id="methods" class="level1">
 <h1>Methods</h1>
-<p>The following code applies a moving average function to the data frame and inserts this calculation into a new column called “chemical name”_moving_avg.</p>
+<p>The following code calculates the moving average for each data point, which corresponds to the chemical concentration of a specific site at a specific time.</p>
+<p>It uses a 9 week window for every data point. Meaning that for each data point, it obtains all concentration values that were collected 4.5 weeks before that data point and all those after that were collected after that point, but not extending past 4.5 weeks.</p>
+<p>The concentration values within this window is averaged out for every data point. Then, this scalar is saved into same row as the initial data point. A separate column called “chemical name”_moving_avg is added for each individual chemical.</p>
+<section id="add-moving-average-column-for-all-chemicals" class="level5">
+<h5 class="anchored" data-anchor-id="add-moving-average-column-for-all-chemicals">Add moving average column for all chemicals</h5>
 <div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create potassium moving average column </span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>joined_sites_avg <span class="ot">&lt;-</span> joined_sites <span class="sc">%&gt;%</span> </span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(sample_id) <span class="sc">%&gt;%</span> </span>
@@ -180,18 +194,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">win_size_wks =</span> <span class="dv">9</span></span>
 <span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">%&gt;%</span> </span>
 <span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
-<p>This code uses pivot longer to place all chemical types into their own column called “chemical” and their concentration average in a separate this column.</p>
+<p>This code uses pivot longer to place all chemical types into their own column called “chemical” and their concentration average in a separate column called “concentration_average”.</p>
 <p>This step will allow the use of facet_grid which relies on a single column to create individual panels.</p>
+</section>
+<section id="pivot-longer-chemical-concentration-columns" class="level5">
+<h5 class="anchored" data-anchor-id="pivot-longer-chemical-concentration-columns">Pivot longer chemical concentration columns</h5>
 <div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pivot longer </span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>long_sites_avg <span class="ot">&lt;-</span> joined_sites_avg <span class="sc">%&gt;%</span> </span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(k_moving_avg<span class="sc">:</span>nh4_n_moving_avg,</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"chemical"</span>,</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"concentration_average"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 <p>This code produces a plot with separate panels for each chemical. Each panel contains the chemical concentration over time with distinct lines for each site.</p>
+</section>
+<section id="plot-chemical-concentrations-across-time" class="level5">
+<h5 class="anchored" data-anchor-id="plot-chemical-concentrations-across-time">Plot chemical concentrations across time</h5>
 <div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list which contains the replacement names for the previous facet grid x axis strip labels. </span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>chemical_names <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">'k_moving_avg'</span><span class="ot">=</span><span class="st">"K mg l^-1"</span>,</span>
@@ -206,7 +232,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> sample_date, <span class="at">y =</span> concentration_average, <span class="at">color =</span> sample_id)) <span class="sc">+</span></span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"PMR"</span>, <span class="st">"BQ1"</span>,<span class="st">"BQ2"</span>, <span class="st">"BQ3"</span>)) <span class="sc">+</span> <span class="co"># change labels in legend</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">"purple"</span>, <span class="st">"darkblue"</span>, <span class="st">"blue"</span>, <span class="st">"yellow"</span>)) <span class="sc">+</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values=</span><span class="fu">c</span>(<span class="st">"darkred"</span>, <span class="st">"darkblue"</span>, <span class="st">"purple"</span>, <span class="st">"black"</span>)) <span class="sc">+</span></span>
 <span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(<span class="fu">factor</span>(chemical,</span>
 <span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels=</span><span class="fu">c</span>(<span class="st">"k_moving_avg"</span>,</span>
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>                              <span class="st">"no3_n_moving_avg"</span>,</span>
@@ -229,18 +255,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Years"</span>, <span class="at">caption =</span> <span class="st">"Figure 3. Concentrations in Bisley, Puerto Rico streams before and after Hurricane Hugo, 9-wk moving </span></span>
 <span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="st">  averages.(a) potassium, (b) nitrate-N, (c) magnesium, (d) calcium and (e) ammonium-N. The vertical </span></span>
 <span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="st">  lines mark the time of hurricane disturbance."</span>) <span class="sc">+</span> </span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">as.Date</span>(<span class="st">"1989-09-19"</span>), <span class="at">linetype =</span> <span class="dv">3</span>) <span class="co"># insert vertical line indicating the occurance of hurricane hugo</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Scale for colour is already present.
-Adding another scale for colour, which will replace the existing scale.</code></pre>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">as.Date</span>(<span class="st">"1989-09-19"</span>), <span class="at">linetype =</span> <span class="dv">3</span>) <span class="co"># insert vertical line indicating the occurance of hurricane hugo</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"chem_site_plot.png"</span>, <span class="at">path =</span> <span class="fu">here</span>(<span class="st">"figs"</span>),  <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"chem_site_plot.png"</span>, <span class="at">path =</span> <span class="fu">here</span>(<span class="st">"figs"</span>),  <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+</section>
 </section>
 <section id="results" class="level1">
 <h1>Results</h1>
-<p>Chemical concentrations of different sites across time.</p>
-<p>The occurrence of Hurricane Hugo is visulaized with a horizontal line, it demonstrates how chemical concentrations changed after it.</p>
+<p>This plot shows the chemical concentrations of different chemicals at different sites across time.</p>
+<p>The occurrence of Hurricane Hugo is visualized with a horizontal line, it demonstrates how chemical concentrations changed after it occurred.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
