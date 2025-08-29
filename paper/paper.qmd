@@ -31,7 +31,12 @@ source(here("1_df_clean_wrang.R"))
 
 
 # Methods
-The following code applies a moving average function to the data frame and inserts this  calculation into a new column called "chemical name"_moving_avg. 
+The following code calculates the moving average for each data point, which corresponds to the chemical concentration of a specific site at a specific time. 
+
+It uses a 9 week window for every data point. Meaning that for each data point, it obtains all concentration values that were collected 4.5 weeks before that data point and all those after that were collected after that point but not extending past 4.5 weeks. 
+
+The concentration values within this windows is averaged out for every data point.  Then, this scalar is saved into same row as the initial data point, but into a separate column called "chemical name"_moving_avg specific to an individual chemical.  
+
 ```{r}
 # Create potassium moving average column 
 joined_sites_avg <- joined_sites %>% 
@@ -123,7 +128,8 @@ chemical_names <- list(
 chem_site_plot <- long_sites_avg %>% 
   ggplot(aes(x = sample_date, y = concentration_average, color = sample_id)) +
   geom_line(size = 1) +
-  scale_color_discrete(labels = c("PMR", "BQ1", "BQ2", "BQ3")) + # change labels in legend
+  scale_color_discrete(labels = c("PMR", "BQ1","BQ2", "BQ3")) + # change labels in legend
+  scale_color_manual(values=c("purple", "darkblue", "blue", "yellow")) +
   facet_grid(rows = vars(factor(chemical,
                      levels=c("k_moving_avg",
                               "no3_n_moving_avg",
