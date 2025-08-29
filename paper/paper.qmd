@@ -29,3 +29,120 @@ Chemical concentration data comes from the following Bisley stream water samples
 source(here("1_df_clean_wrang.R"))
 ```
 
+
+# Methods
+The following code is apply a moving average function to a data frame and insert calculation into a new column called "chemical name"_moving_avg. 
+
+```{r}
+# Create potassium moving average column 
+joined_sites_avg <- joined_sites %>% 
+  group_by(sample_id) %>% 
+  mutate(k_moving_avg = sapply(
+    sample_date,
+    moving_average,
+    dates = sample_date,
+    conc = k,
+    win_size_wks = 9
+  )) %>% 
+  ungroup()
+
+# Create dissolved nitrogen moving average column 
+joined_sites_avg <- joined_sites_avg %>% 
+  group_by(sample_id) %>% 
+  mutate(no3_n_moving_avg = sapply(
+    sample_date,
+    moving_average,
+    dates = sample_date,
+    conc = no3_n,
+    win_size_wks = 9
+  )) %>% 
+  ungroup()
+
+# Create magnesium moving average column 
+joined_sites_avg <- joined_sites_avg %>% 
+  group_by(sample_id) %>% 
+  mutate(mg_moving_avg = sapply(
+    sample_date,
+    moving_average,
+    dates = sample_date,
+    conc = mg,
+    win_size_wks = 9
+  )) %>% 
+  ungroup()
+
+# Create calcium moving average column 
+joined_sites_avg <- joined_sites_avg %>% 
+  group_by(sample_id) %>% 
+  mutate(ca_moving_avg = sapply(
+    sample_date,
+    moving_average,
+    dates = sample_date,
+    conc = ca,
+    win_size_wks = 9
+  )) %>% 
+  ungroup()
+
+# Create ammonium nitrogen moving average column 
+joined_sites_avg <- joined_sites_avg %>% 
+  group_by(sample_id) %>% 
+  mutate(nh4_n_moving_avg = sapply(
+    sample_date,
+    moving_average,
+    dates = sample_date,
+    conc = nh4_n,
+    win_size_wks = 9
+  )) %>% 
+  ungroup()
+
+```
+
+
+```{r}
+long_sites_avg <- joined_sites_avg %>% 
+  pivot_longer(k_moving_avg:nh4_n_moving_avg,
+               names_to = "chemical", values_to = "concentration_average")
+```
+
+
+```{r}
+chemical_names <- list(
+  'k_moving_avg'="K mg l^-1",
+  'no3_n_moving_avg'="NO3-N ug l^-1",
+  'mg_moving_avg'="Mg mg l^-1",
+  'ca_moving_avg'="Ca mg l^-1", 
+  'nh4_n_moving_avg' = "NH4-N ug l-1"
+)
+
+chem_site_plot <- long_sites_avg %>% 
+  ggplot(aes(x = sample_date, y = concentration_average, color = sample_id)) +
+  geom_line(size = 1) +
+  scale_color_discrete(labels = c("PMR", "BQ1", "BQ2", "BQ3")) +
+  facet_grid(rows = vars(factor(chemical,
+                     levels=c("k_moving_avg", "no3_n_moving_avg", "mg_moving_avg", "ca_moving_avg", "nh4_n_moving_avg"))), scales = "free", switch = "y", labeller=chemical_labeller) + 
+  theme_classic() + 
+  theme(legend.position = c(1.07, 0.9), 
+        plot.margin = unit(c(1,2.4,0.5,0.4), "cm"),
+        axis.title.y = element_blank(), 
+        panel.border = element_rect(color = "black", 
+                                    fill = NA, size = 1),
+        plot.title = element_text(hjust = 0.5), 
+        axis.title.x = element_text(size = 13), 
+        legend.title=element_blank(),
+        plot.caption = element_text(size = 10, hjust = 0)
+        ) +
+  xlab("Years") + 
+  labs(title = "Years", caption = "Figure 3. Concentrations in Bisley, Puerto Rico streams before and after Hurricane Hugo, 9-wk moving 
+  averages.(a) potassium, (b) nitrate-N, (c) magnesium, (d) calcium and (e) ammonium-N. The vertical 
+  lines mark the time of hurricane disturbance.") + 
+  geom_vline(xintercept = as.Date("1989-09-19"), linetype = 3)
+  
+```
+
+# Results
+Produce plot of chemical concentrations of different sites across time. 
+```{r, fig.width=8, fig.height = 10}
+chem_site_plot
+```
+
+
+
