@@ -5,6 +5,7 @@ format: html
 ---
 
 ```{r, message=FALSE}
+# load packages
 library(tidyverse)
 library(janitor)
 library(here)
